@@ -3,8 +3,8 @@
 =============================================================================
 MÓDULO ML: Predictor de Saturación UCI a 24 horas (Random Forest)
 Universidad Nacional del Altiplano - EPIS (2026-II)
-Carga el modelo Random Forest entrenado por 02_scripts/03_evaluacion.py
-(05_modelos/modelo_rf.pkl) usando exactamente las 16 variables sin fuga de
+Carga el modelo Random Forest entrenado por scripts/03_evaluacion.py
+(modelos/modelo_rf.pkl) usando exactamente las 16 variables sin fuga de
 información (Tabla 2 del PDF) + clima real NASA POWER 2023-2026 + feriados PE.
 =============================================================================
 """
@@ -25,8 +25,8 @@ if str(APP_ROOT) not in sys.path:
 from config import Config
 from ml.mock_predictor import calculate_hospital_forecast
 
-CLIMA_CSV_PATH = APP_ROOT.parent / "01_datos" / "clima_puno_nasa_power_2023_2026.csv"
-CONSOLIDATED_CSV_PATH = APP_ROOT.parent / "01_datos" / "dataset_uci_puno_consolidado_2023_2026.csv"
+CLIMA_CSV_PATH = APP_ROOT.parent / "datos" / "clima_puno_nasa_power_2023_2026.csv"
+CONSOLIDATED_CSV_PATH = APP_ROOT.parent / "datos" / "dataset_uci_puno_consolidado_2023_2026.csv"
 
 FEATURES_16_PDF = [
     "establecimiento_id",
@@ -88,7 +88,7 @@ def _is_peru_holiday(dt_obj):
 
 class UCIPredictor:
     """
-    Carga y ejecuta el modelo Random Forest entrenado (05_modelos/modelo_rf.pkl)
+    Carga y ejecuta el modelo Random Forest entrenado (modelos/modelo_rf.pkl)
     usando el esquema exacto de 16 predictores sin fuga del PDF.
     """
 
@@ -268,7 +268,7 @@ class UCIPredictor:
         """
         Reentrena el modelo Random Forest (RF-06) con las 16 variables exactas del PDF
         usando el dataset consolidado 2023-2026 + registros nuevos en SQLite,
-        y lo guarda en 05_modelos/modelo_rf.pkl.
+        y lo guarda en modelos/modelo_rf.pkl.
         """
         import joblib
         import numpy as np

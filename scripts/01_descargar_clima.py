@@ -7,7 +7,7 @@ Coordenadas oficiales del proyecto: lat = -15.8396, lon = -70.0282
 Variables (Sección 4.1 del PDF):
   T2M, T2M_MAX, T2M_MIN, RH2M, WD2M, GWETROOT, PRECTOTCORR
 Calcula: rango_termico = T2M_MAX - T2M_MIN y temp_min_lag3 (media móvil t-1..t-3)
-Salida: 01_datos/clima_puno_nasa_power_2023_2026.csv
+Salida: datos/clima_puno_nasa_power_2023_2026.csv
 =============================================================================
 """
 
@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATOS_DIR = BASE_DIR / "01_datos"
+DATOS_DIR = BASE_DIR / "datos"
 OUTPUT_CSV = DATOS_DIR / "clima_puno_nasa_power_2023_2026.csv"
 
 LAT = -15.8396

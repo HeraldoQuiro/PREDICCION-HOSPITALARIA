@@ -17,7 +17,7 @@ Modelos evaluados sobre prueba real (2026-09-01 a 2026-11-03):
   9. GRU  (ventana t-7..t-1, BPTT + Adam)
   + Variante complementaria de regresión (% ocupación): CatBoostRegressor vs Persistencia
 
-Salidas guardadas en 05_modelos/:
+Salidas guardadas en modelos/:
   - modelo_rf.pkl, modelo_xgb.pkl, modelo_catboost.pkl, modelo_logreg.pkl,
     modelo_lstm.pkl, modelo_gru.pkl, modelo_regresion_catboost.pkl
   - tabla_resultados_modelos.csv
@@ -53,8 +53,8 @@ from catboost import CatBoostClassifier, CatBoostRegressor
 warnings.filterwarnings("ignore")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATOS_DIR = BASE_DIR / "01_datos"
-MODELOS_DIR = BASE_DIR / "05_modelos"
+DATOS_DIR = BASE_DIR / "datos"
+MODELOS_DIR = BASE_DIR / "modelos"
 DATASET_CSV = DATOS_DIR / "dataset_uci_puno_consolidado_2023_2026.csv"
 
 TRAIN_END = pd.Timestamp("2026-08-31")
@@ -651,7 +651,7 @@ def main():
     )
     rf_deploy.fit(X_full, y_full)
 
-    # Guardar TODOS los modelos entrenados en 05_modelos/
+    # Guardar TODOS los modelos entrenados en modelos/
     MODELOS_DIR.mkdir(parents=True, exist_ok=True)
     common_meta = {
         "features_16": FEATURES_16,

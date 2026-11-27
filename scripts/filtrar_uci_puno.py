@@ -1,9 +1,9 @@
 from pathlib import Path
 import pandas as pd
 
-# Rutas relativas a la estructura ordenada del proyecto (01_datos/)
+# Rutas relativas a la estructura ordenada del proyecto (datos/)
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATOS_DIR = BASE_DIR / "01_datos"
+DATOS_DIR = BASE_DIR / "datos"
 
 # 1. Cargar el archivo oficial del MINSA (detecta automáticamente separador y codificación)
 archivo_entrada = DATOS_DIR / "DATA_CAMAS_HIST.csv"

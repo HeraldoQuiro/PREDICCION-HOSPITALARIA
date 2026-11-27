@@ -55,7 +55,7 @@ pip install -r requirements.txt
 python database/init_db.py
 ```
 
-Este script crea la base de datos SQLite (`uci_puno.db`), crea todas las tablas e importa los datos reales del CSV `01_datos/UCI_5_HOSPITALES_PUNO_2026.csv`.
+Este script crea la base de datos SQLite (`uci_puno.db`), crea todas las tablas e importa los datos reales del CSV `datos/UCI_5_HOSPITALES_PUNO_2026.csv`.
 
 ### 2.5 Ejecutar la aplicación
 
@@ -137,15 +137,15 @@ sistema_uci_puno/
 
 Cuando el modelo Random Forest esté entrenado:
 
-1. Entrenar con los scripts en `02_scripts/`:
+1. Entrenar con los scripts en `scripts/`:
    ```bash
-   python 02_scripts/02_simulacion.py
-   python 02_scripts/03_evaluacion.py
+   python scripts/02_simulacion.py
+   python scripts/03_evaluacion.py
    ```
 
-2. El script guarda el modelo en `05_modelos/modelo_rf.pkl`
+2. El script guarda el modelo en `modelos/modelo_rf.pkl`
 
-3. `predictor.py` carga automáticamente `05_modelos/modelo_rf.pkl` (o también puedes copiarlo a `sistema_uci_puno\ml\modelo_rf.pkl`).
+3. `predictor.py` carga automáticamente `modelos/modelo_rf.pkl` (o también puedes copiarlo a `sistema_uci_puno\ml\modelo_rf.pkl`).
 
 4. `predictor.py` detectará automáticamente el archivo .pkl y lo usará en lugar del mock.
 

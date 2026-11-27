@@ -16,8 +16,8 @@ Metodología estricta sin fuga de información:
 - Clima real NASA POWER 2023-2026 y feriados oficiales del Perú (holidays.PE()).
 
 Salidas:
-- 01_datos/dataset_uci_puno_consolidado_2023_2026.csv (19 columnas oficiales + metadata)
-- 05_modelos/calibracion_simulador.json
+- datos/dataset_uci_puno_consolidado_2023_2026.csv (19 columnas oficiales + metadata)
+- modelos/calibracion_simulador.json
 =============================================================================
 """
 
@@ -29,8 +29,8 @@ import holidays
 import statsmodels.api as sm
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATOS_DIR = BASE_DIR / "01_datos"
-MODELOS_DIR = BASE_DIR / "05_modelos"
+DATOS_DIR = BASE_DIR / "datos"
+MODELOS_DIR = BASE_DIR / "modelos"
 
 UCI_CSV = DATOS_DIR / "UCI_5_HOSPITALES_PUNO_2026.csv"
 CLIMA_CSV = DATOS_DIR / "clima_puno_nasa_power_2023_2026.csv"

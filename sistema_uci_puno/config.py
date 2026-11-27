@@ -19,18 +19,18 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # Posibles ubicaciones del CSV oficial MINSA 2026
 CSV_CANDIDATE_PATHS = [
-    r"C:\PROJECTS\PREDICCION HOSPITALARIA\01_datos\UCI_5_HOSPITALES_PUNO_2026.csv",
-    str(BASE_DIR.parent / "01_datos" / "UCI_5_HOSPITALES_PUNO_2026.csv"),
+    r"C:\PROJECTS\PREDICCION HOSPITALARIA\datos\UCI_5_HOSPITALES_PUNO_2026.csv",
+    str(BASE_DIR.parent / "datos" / "UCI_5_HOSPITALES_PUNO_2026.csv"),
     str(BASE_DIR / "data" / "UCI_5_HOSPITALES_PUNO_2026.csv"),
     str(BASE_DIR / "database" / "UCI_5_HOSPITALES_PUNO_2026.csv"),
 ]
 
 # Posibles ubicaciones del modelo .pkl
 MODEL_CANDIDATE_PATHS = [
-    r"C:\PROJECTS\PREDICCION HOSPITALARIA\05_modelos\modelo_rf.pkl",
-    str(BASE_DIR.parent / "05_modelos" / "modelo_rf.pkl"),
-    r"C:\PROJECTS\PREDICCION HOSPITALARIA\05_modelos\rf_uci_model.pkl",
-    str(BASE_DIR.parent / "05_modelos" / "rf_uci_model.pkl"),
+    r"C:\PROJECTS\PREDICCION HOSPITALARIA\modelos\modelo_rf.pkl",
+    str(BASE_DIR.parent / "modelos" / "modelo_rf.pkl"),
+    r"C:\PROJECTS\PREDICCION HOSPITALARIA\modelos\rf_uci_model.pkl",
+    str(BASE_DIR.parent / "modelos" / "rf_uci_model.pkl"),
     str(BASE_DIR / "ml" / "rf_uci_model.pkl"),
 ]
 
@@ -63,7 +63,7 @@ class Config:
             MODEL_PATH = path
             break
     if not MODEL_PATH:
-        MODEL_PATH = str(BASE_DIR.parent / "05_modelos" / "modelo_rf.pkl")
+        MODEL_PATH = str(BASE_DIR.parent / "modelos" / "modelo_rf.pkl")
 
     # Umbrales clínicos y de gestión hospitalaria (MINSA & Litvak & Bisognano, 2011)
     SATURATION_THRESHOLD = 85.0  # >= 85% saturación crítica (estado_saturacion = 1)

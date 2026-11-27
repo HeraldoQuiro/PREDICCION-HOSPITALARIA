@@ -4,10 +4,10 @@
 04_completar_informe.py
 Regenera y actualiza el informe TF - 5H.docx leyendo automáticamente los
 resultados reales de:
-  - 01_datos/clima_puno_nasa_power_2023_2026.csv
-  - 01_datos/dataset_uci_puno_consolidado_2023_2026.csv
-  - 05_modelos/calibracion_simulador.json
-  - 05_modelos/metricas_evaluacion.json
+  - datos/clima_puno_nasa_power_2023_2026.csv
+  - datos/dataset_uci_puno_consolidado_2023_2026.csv
+  - modelos/calibracion_simulador.json
+  - modelos/metricas_evaluacion.json
   - Proyecto_UCI_EPIS_2026II_Puno.pdf (base metodológica)
 =============================================================================
 """
@@ -22,8 +22,8 @@ from docx.oxml.ns import qn
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCX_PATH = BASE_DIR / "informe TF - 5H.docx"
-CALIB_JSON = BASE_DIR / "05_modelos" / "calibracion_simulador.json"
-EVAL_JSON = BASE_DIR / "05_modelos" / "metricas_evaluacion.json"
+CALIB_JSON = BASE_DIR / "modelos" / "calibracion_simulador.json"
+EVAL_JSON = BASE_DIR / "modelos" / "metricas_evaluacion.json"
 
 
 def set_table_borders(table):
@@ -207,14 +207,14 @@ def main():
     add_sec_heading(doc, "2. Clima Real NASA POWER (2023–2026) y Simulación Calibrada (COMPLETADO)", level=2)
     p_c = doc.add_paragraph()
     p_c.add_run(
-        "Mediante 02_scripts/01_descargar_clima.py se descargaron los registros reales diarios de "
+        "Mediante scripts/01_descargar_clima.py se descargaron los registros reales diarios de "
         "NASA POWER (MERRA-2) para latitud −15.8396, longitud −70.0282 (2023-01-01 a 2026-11-23), "
         "sustituyendo la serie climática provisional mencionada en el documento base. Luego, "
-        "02_scripts/02_simulacion.py calibró cada UCI usando exclusivamente datos reales hasta el "
+        "scripts/02_simulacion.py calibró cada UCI usando exclusivamente datos reales hasta el "
         "31/08/2026, simuló los 1,096 días de 2023–2025 con el balance stock–flujo de Asplin (2003) "
         "y llegadas Poisson / estancia Gamma (k=2) de Bai (2021), y consolidó las 19 columnas "
         "oficiales junto con los feriados nacionales (holidays.PE()) en "
-        "01_datos/dataset_uci_puno_consolidado_2023_2026.csv."
+        "datos/dataset_uci_puno_consolidado_2023_2026.csv."
     ).font.size = Pt(10.5)
 
     rows_calib = []
@@ -239,7 +239,7 @@ def main():
     add_sec_heading(doc, "3. Entrenamiento y Evaluación de los 9 Modelos ML (COMPLETADO)", level=2)
     p_m = doc.add_paragraph()
     p_m.add_run(
-        f"El script 02_scripts/03_evaluacion.py construyó exactamente las 16 variables predictoras "
+        f"El script scripts/03_evaluacion.py construyó exactamente las 16 variables predictoras "
         f"sin fuga de información (Tabla 2 del PDF: identificación, calendario de t, clima hasta t−1, "
         f"ocupación en t−1, t−2, t−7 e ingresos/egresos de t−1). Se entrenó con {ev['n_entrenamiento']} "
         f"unidad-días hasta el 31/08/2026 y se evaluó sobre el periodo real posterior (01/09/2026 al "
@@ -289,7 +289,7 @@ def main():
     rows_imp = [(k, f"{v:.4f}") for k, v in ev["importancia_permutacion_rf"].items()]
     add_styled_table(doc, ["Grupo de variables predictoras", "Caída en PR-AUC al permutar"], rows_imp)
 
-    add_sec_heading(doc, "3.2 Modelos Serializados Guardados en 05_modelos/", level=3)
+    add_sec_heading(doc, "3.2 Modelos Serializados Guardados en modelos/", level=3)
     add_bullet(doc, "modelo_rf.pkl: ", "Random Forest Classifier (despliegue + evaluación) integrado directamente en la aplicación web Flask.")
     add_bullet(doc, "modelo_xgb.pkl y modelo_catboost.pkl: ", "Modelos de gradient boosting entrenados y serializados con joblib.")
     add_bullet(doc, "modelo_logreg.pkl: ", "Pipeline StandardScaler + Regresión Logística balanceada.")
@@ -302,7 +302,7 @@ def main():
     p_w = doc.add_paragraph()
     p_w.add_run(
         "Se implementó la aplicación web por capas en sistema_uci_puno/ (Flask + Jinja2 + Chart.js + SQLite "
-        "con esquema compatible para Firebird 5.0.4) conectada al archivo 05_modelos/modelo_rf.pkl "
+        "con esquema compatible para Firebird 5.0.4) conectada al archivo modelos/modelo_rf.pkl "
         "entrenado con las 16 variables exactas del PDF y el clima real de NASA POWER:"
     ).font.size = Pt(10.5)
     add_bullet(doc, "Autenticación: ", "Acceso protegido por sesión (@login_required, credenciales iniciales admin / uci2026).")
@@ -313,20 +313,20 @@ def main():
 
     # 5. Documentación de Ingeniería de Software y Estructura Final
     add_sec_heading(doc, "5. Documentación de Ingeniería de Software y Estructura Final (COMPLETADO)", level=2)
-    add_bullet(doc, "04_documentacion/SRS.md: ", "Especificación de Requerimientos (RF-01 a RF-07, RNF-01 a RNF-06, casos de uso).")
-    add_bullet(doc, "04_documentacion/arquitectura.md: ", "Arquitectura en 5 capas, flujo sin fuga y modelo relacional de BD.")
-    add_bullet(doc, "04_documentacion/manual_tecnico.md y manual_usuario.md: ", "Instalación, endpoints, integración ML, migración Firebird 5 y guía operativa.")
+    add_bullet(doc, "documentacion/SRS.md: ", "Especificación de Requerimientos (RF-01 a RF-07, RNF-01 a RNF-06, casos de uso).")
+    add_bullet(doc, "documentacion/arquitectura.md: ", "Arquitectura en 5 capas, flujo sin fuga y modelo relacional de BD.")
+    add_bullet(doc, "documentacion/manual_tecnico.md y manual_usuario.md: ", "Instalación, endpoints, integración ML, migración Firebird 5 y guía operativa.")
 
     p_tree = doc.add_paragraph()
     r_tree = p_tree.add_run(
         "PREDICCION HOSPITALARIA/\n"
-        "├── 01_datos/          → DATA_CAMAS_HIST.csv, UCI_5_HOSPITALES_PUNO_2026.csv,\n"
+        "├── datos/          → DATA_CAMAS_HIST.csv, UCI_5_HOSPITALES_PUNO_2026.csv,\n"
         "│                        clima_puno_nasa_power_2023_2026.csv, dataset_uci_puno_consolidado_2023_2026.csv\n"
-        "├── 02_scripts/        → filtrar_uci_puno.py, 01_descargar_clima.py, 02_simulacion.py,\n"
+        "├── scripts/        → filtrar_uci_puno.py, 01_descargar_clima.py, 02_simulacion.py,\n"
         "│                        03_evaluacion.py, 04_completar_informe.py\n"
         "├── sistema_uci_puno/  → Aplicación web Flask completa (conectada a modelo_rf.pkl)\n"
-        "├── 04_documentacion/  → SRS.md, arquitectura.md, manual_tecnico.md, manual_usuario.md\n"
-        "├── 05_modelos/        → 7 modelos .pkl + metricas_evaluacion.json + tabla_resultados_modelos.csv\n"
+        "├── documentacion/  → SRS.md, arquitectura.md, manual_tecnico.md, manual_usuario.md\n"
+        "├── modelos/        → 7 modelos .pkl + metricas_evaluacion.json + tabla_resultados_modelos.csv\n"
         "├── CAMPO DE TRABAJO/  → Archivos auxiliares y pruebas\n"
         "├── README.md          → Guía del repositorio\n"
         "├── Proyecto_UCI_EPIS_2026II_Puno.pdf → Documento base (sin modificar)\n"

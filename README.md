@@ -29,13 +29,13 @@ Sistema de predicción con aprendizaje automático que anticipa con **24 horas d
 
 ```
 PREDICCION HOSPITALARIA/
-├── 📁 01_datos/
+├── 📁 datos/
 │   ├── DATA_CAMAS_HIST.csv                          # Dataset completo MINSA (~19 MB)
 │   ├── UCI_5_HOSPITALES_PUNO_2026.csv               # Datos filtrados: 5 UCI Puno (1,558 registros)
 │   ├── clima_puno_nasa_power_2023_2026.csv          # ✅ Clima diario real NASA POWER MERRA-2 (2023–2026)
 │   └── dataset_uci_puno_consolidado_2023_2026.csv   # ✅ Dataset consolidado 19 columnas (7,038 registros)
 │
-├── 📁 02_scripts/
+├── 📁 scripts/
 │   ├── filtrar_uci_puno.py              # ✅ Filtrado datos MINSA → 5 hospitales Puno
 │   ├── 01_descargar_clima.py            # ✅ Descarga clima real NASA POWER 2023-2026
 │   ├── 02_simulacion.py                 # ✅ Calibración GLM Poisson/Gamma y simulación 2023-2025
@@ -50,13 +50,13 @@ PREDICCION HOSPITALARIA/
 │   ├── templates/                       # HTML Jinja2
 │   └── static/                          # CSS + JS (dark mode, Chart.js)
 │
-├── 📁 04_documentacion/
+├── 📁 documentacion/
 │   ├── SRS.md                           # ✅ Especificación de Requerimientos
 │   ├── arquitectura.md                  # ✅ Documento de Arquitectura
 │   ├── manual_tecnico.md                # ✅ Manual Técnico (instalación)
 │   └── manual_usuario.md                # ✅ Manual de Usuario
 │
-├── 📁 05_modelos/
+├── 📁 modelos/
 │   ├── modelo_rf.pkl                    # ✅ Random Forest entrenado (usado por la app web)
 │   ├── modelo_xgb.pkl                   # ✅ XGBoost entrenado
 │   ├── modelo_catboost.pkl              # ✅ CatBoost entrenado

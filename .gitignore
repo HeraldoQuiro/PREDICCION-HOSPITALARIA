@@ -7,8 +7,8 @@
 CAMPO DE TRABAJO/
 
 # Datos crudos pesados del MINSA y dataset consolidado regenerable
-01_datos/DATA_CAMAS_HIST.csv
-01_datos/dataset_uci_puno_consolidado_2023_2026.csv
+datos/DATA_CAMAS_HIST.csv
+datos/dataset_uci_puno_consolidado_2023_2026.csv
 
 # Base de datos SQLite local (se regenera automáticamente al ejecutar app.py)
 *.db
