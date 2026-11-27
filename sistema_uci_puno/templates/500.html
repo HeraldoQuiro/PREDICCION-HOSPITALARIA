@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Error del Servidor (500){% endblock %}
+{% block page_title %}Error 500 — Error Interno del Servidor{% endblock %}
+{% block breadcrumb %}500{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 40px auto;" id="error-500-card">
+    <div style="font-size: 4rem; font-weight: 800; color: #ff4757; font-family: 'JetBrains Mono', monospace; line-height: 1; margin-bottom: 16px;">
+        500
+    </div>
+    <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">
+        Error Interno del Sistema
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
+        Ocurrió un error inesperado al procesar la solicitud. El evento ha sido registrado para revisión por el equipo técnico.
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" id="btn-return-dashboard-500">
+        <i class="fa-solid fa-house"></i>
+        <span>Volver al Tablero Principal</span>
+    </a>
+</div>
+{% endblock %}

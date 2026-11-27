@@ -1,0 +1,154 @@
+{
+  "fecha_ejecucion": "2026-11-26 18:01:25",
+  "clima_usado": "NASA POWER MERRA-2 real (2023-2026)",
+  "n_entrenamiento": 6600,
+  "n_prueba_real": 294,
+  "saturados_prueba_real": 39,
+  "pct_saturados_prueba": 13.3,
+  "mejor_modelo_ejecucion": {
+    "modelo": "Regresión logística",
+    "precision": 0.5,
+    "sensibilidad": 0.692,
+    "f1": 0.581,
+    "roc_auc": 0.899,
+    "pr_auc": 0.559
+  },
+  "random_forest_best_params": {
+    "max_depth": 6,
+    "min_samples_leaf": 5
+  },
+  "resultados_modelos": [
+    {
+      "modelo": "Persistencia (estado de ayer)",
+      "precision": 0.6,
+      "sensibilidad": 0.615,
+      "f1": 0.608,
+      "roc_auc": 0.776,
+      "pr_auc": 0.42
+    },
+    {
+      "modelo": "Ingenuo semanal (hace 7 días)",
+      "precision": 0.319,
+      "sensibilidad": 0.385,
+      "f1": 0.349,
+      "roc_auc": 0.63,
+      "pr_auc": 0.204
+    },
+    {
+      "modelo": "Perfil de calendario (mes × día)",
+      "precision": 0.0,
+      "sensibilidad": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.571,
+      "pr_auc": 0.158
+    },
+    {
+      "modelo": "Regresión logística",
+      "precision": 0.5,
+      "sensibilidad": 0.692,
+      "f1": 0.581,
+      "roc_auc": 0.899,
+      "pr_auc": 0.559
+    },
+    {
+      "modelo": "Random Forest",
+      "precision": 0.615,
+      "sensibilidad": 0.615,
+      "f1": 0.615,
+      "roc_auc": 0.899,
+      "pr_auc": 0.525
+    },
+    {
+      "modelo": "XGBoost",
+      "precision": 0.561,
+      "sensibilidad": 0.59,
+      "f1": 0.575,
+      "roc_auc": 0.896,
+      "pr_auc": 0.554
+    },
+    {
+      "modelo": "CatBoost",
+      "precision": 0.561,
+      "sensibilidad": 0.59,
+      "f1": 0.575,
+      "roc_auc": 0.898,
+      "pr_auc": 0.538
+    },
+    {
+      "modelo": "LSTM",
+      "precision": 0.319,
+      "sensibilidad": 0.564,
+      "f1": 0.407,
+      "roc_auc": 0.796,
+      "pr_auc": 0.309
+    },
+    {
+      "modelo": "GRU",
+      "precision": 0.423,
+      "sensibilidad": 0.769,
+      "f1": 0.545,
+      "roc_auc": 0.884,
+      "pr_auc": 0.531
+    }
+  ],
+  "importancia_permutacion_rf": {
+    "Ocupación previa (t-1, t-2, t-7)": 0.3014,
+    "Clima hasta t-1 (temp_min, temp_max, humedad)": -0.028,
+    "Flujo (ingresos/egresos t-1)": 0.0243,
+    "Calendario (día t)": 0.0124,
+    "Identificación (hospital, tipo UCI)": -0.0039
+  },
+  "desempeno_por_establecimiento_rf": {
+    "CARLOS MONJE MEDRANO": {
+      "dias_prueba": 64,
+      "dias_saturados": 22,
+      "f1": 0.636,
+      "falsas_alarmas": 8
+    },
+    "CLINICA ADVENTISTA AMERICANA DE JULIACA": {
+      "dias_prueba": 59,
+      "dias_saturados": 7,
+      "f1": 0.667,
+      "falsas_alarmas": 3
+    },
+    "CLINICA MONTE SINAI JULIACA": {
+      "dias_prueba": 55,
+      "dias_saturados": 0,
+      "f1": null,
+      "falsas_alarmas": 0
+    },
+    "HOSPITAL REGIONAL MANUEL NUÑEZ BUTRON": {
+      "dias_prueba": 53,
+      "dias_saturados": 10,
+      "f1": 0.526,
+      "falsas_alarmas": 4
+    },
+    "HOSPITAL SAN MARTIN DE PORRES": {
+      "dias_prueba": 63,
+      "dias_saturados": 0,
+      "f1": null,
+      "falsas_alarmas": 0
+    }
+  },
+  "episodios_rf": {
+    "inicios_totales": 15,
+    "inicios_detectados": 0,
+    "continuaciones_totales": 24,
+    "continuaciones_detectadas": 24
+  },
+  "regresion_porcentaje_ocupacion": {
+    "catboost_mae": 12.21,
+    "catboost_rmse": 18.12,
+    "persistencia_mae": 11.2,
+    "persistencia_rmse": 19.25
+  },
+  "archivos_guardados": [
+    "modelo_rf.pkl",
+    "modelo_xgb.pkl",
+    "modelo_catboost.pkl",
+    "modelo_logreg.pkl",
+    "modelo_lstm.pkl",
+    "modelo_gru.pkl",
+    "modelo_regresion_catboost.pkl"
+  ]
+}

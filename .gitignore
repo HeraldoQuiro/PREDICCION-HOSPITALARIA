@@ -1,0 +1,29 @@
+# Documentos privados / informes (no subir a Git)
+*.pdf
+*.docx
+~$*.docx
+
+# Carpeta temporal local
+CAMPO DE TRABAJO/
+
+# Datos crudos pesados del MINSA y dataset consolidado regenerable
+01_datos/DATA_CAMAS_HIST.csv
+01_datos/dataset_uci_puno_consolidado_2023_2026.csv
+
+# Base de datos SQLite local (se regenera automáticamente al ejecutar app.py)
+*.db
+*.sqlite
+*.sqlite3
+
+# Python / Entornos / IDE
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

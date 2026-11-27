@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión — SatUCI Puno</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Estilos Custom SatUCI -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="login-page-wrapper">
+        <div class="login-card" id="login-container-card">
+            <!-- Header con Logo Neón -->
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <h1 class="login-title">SatUCI Puno</h1>
+                <p class="login-subtitle">Sistema de Predicción de Saturación UCI a 24h</p>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">
+                    Universidad Nacional del Altiplano — EPIS (2026-II)
+                </div>
+            </div>
+
+            <!-- Alertas Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div style="margin-bottom: 20px;">
+                        {% for category, message in messages %}
+                            <div class="flash-alert {{ category }}" style="font-size: 0.82rem; padding: 10px 14px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Formulario de Autenticación -->
+            <form action="{{ url_for('login') }}" method="POST" id="form-login">
+                <div class="form-group">
+                    <label class="form-label" for="input-username">
+                        <i class="fa-solid fa-user" style="color: var(--accent-teal); margin-right: 4px;"></i>
+                        Usuario
+                    </label>
+                    <input type="text" 
+                           id="input-username" 
+                           name="username" 
+                           class="form-control" 
+                           placeholder="admin" 
+                           value="admin"
+                           required 
+                           autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="input-password">
+                        <i class="fa-solid fa-lock" style="color: var(--accent-teal); margin-right: 4px;"></i>
+                        Contraseña
+                    </label>
+                    <input type="password" 
+                           id="input-password" 
+                           name="password" 
+                           class="form-control" 
+                           placeholder="••••••••" 
+                           value="uci2026"
+                           required>
+                </div>
+
+                <button type="submit" id="btn-submit-login" class="btn btn-primary btn-block" style="margin-top: 10px;">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Ingresar al Sistema</span>
+                </button>
+            </form>
+
+            <!-- Credenciales de Demostración -->
+            <div class="demo-credentials-pill" id="demo-credentials-box">
+                <div>
+                    <div><strong>Acceso Académico:</strong></div>
+                    <div>Usuario: <code>admin</code> | Clave: <code>uci2026</code></div>
+                </div>
+                <i class="fa-solid fa-shield-halved" style="color: var(--accent-teal); font-size: 1.1rem;"></i>
+            </div>
+
+            <!-- Footer Académico -->
+            <div style="text-align: center; margin-top: 24px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.4;">
+                EDA 2026-II · Random Forest (ROC-AUC 0.911)<br>
+                <em>Roy Aldair Tipo Catunta · Robert Heraldo Quiro Arguedas</em>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

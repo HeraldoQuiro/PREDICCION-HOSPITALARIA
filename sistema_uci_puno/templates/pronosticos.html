@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Pronósticos de Saturación a 24h{% endblock %}
+{% block page_title %}Módulo de Inteligencia Artificial: Pronósticos a 24 Horas{% endblock %}
+{% block breadcrumb %}Pronósticos 24h{% endblock %}
+
+{% block content %}
+<!-- HEADER DEL MODELO DE MACHINE LEARNING -->
+<div class="glass-card" style="margin-bottom: 28px; padding: 24px 28px;" id="ml-model-performance-card">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+        <div style="max-width: 650px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span class="badge badge-teal">Modelo Seleccionado</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                    Simulación Calibrada + Datos Reales MINSA Puno 2026
+                </span>
+            </div>
+            <h2 style="font-size: 1.45rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">
+                {{ model_info.nombre }} — Anticipación a 24 Horas
+            </h2>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                Predice si cada una de las 5 UCIs de Puno alcanzará el estado de <strong>saturación crítica (≥ 85%)</strong> al día siguiente (t), utilizando únicamente información disponible hasta el día anterior (t-1) para garantizar cero fuga de datos (data leakage).
+            </p>
+        </div>
+
+        <!-- Botón Reentrenar Modelo (RF-06) -->
+        <form action="{{ url_for('reentrenar_modelo') }}" method="POST" id="form-retrain-model">
+            <button type="submit" class="btn btn-secondary btn-sm" id="btn-retrain-model" title="Reentrenar Random Forest con los datos más recientes">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Re-entrenar Modelo</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Métricas Oficiales de Rendimiento del Modelo -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-glass-subtle);">
+        <div style="background: rgba(0, 212, 255, 0.06); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid rgba(0, 212, 255, 0.2);">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">ROC-AUC</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-teal); font-family: 'JetBrains Mono', monospace;">
+                {{ model_info.roc_auc }}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Excelente discriminación</div>
+        </div>
+
+        <div style="background: rgba(168, 85, 247, 0.06); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid rgba(168, 85, 247, 0.2);">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">PR-AUC</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #c084fc; font-family: 'JetBrains Mono', monospace;">
+                {{ model_info.pr_auc }}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Robusto ante desbalance</div>
+        </div>
+
+        <div style="background: rgba(16, 185, 129, 0.06); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">F1-Score</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: #34d399; font-family: 'JetBrains Mono', monospace;">
+                {{ model_info.f1 }}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Balance precisión-recall</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Variables Predictoras</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-primary); font-family: 'JetBrains Mono', monospace;">
+                {{ model_info.features_count }}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">Rezagos, clima y flujo</div>
+        </div>
+    </div>
+</div>
+
+<!-- RESUMEN PREDICTIVO A 24 HORAS -->
+<div class="kpi-grid" style="margin-bottom: 28px;" id="forecast-kpis-grid">
+    <div class="kpi-card" id="kpi-forecast-saturated">
+        <div class="kpi-content">
+            <span class="kpi-label">Saturación Predicha Mañana</span>
+            <span class="kpi-value" style="color: {% if total_sat_predicted > 0 %}#ff4757{% else %}#10b981{% endif %};">
+                {{ total_sat_predicted }}
+            </span>
+            <span class="kpi-detail">
+                {% if total_sat_predicted > 0 %}
+                    Hospitales en riesgo de colapso a 24h
+                {% else %}
+                    Sin saturación inminente prevista
+                {% endif %}
+            </span>
+        </div>
+        <div class="kpi-icon-box {% if total_sat_predicted > 0 %}kpi-icon-danger{% else %}kpi-icon-success{% endif %}">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-forecast-high-risk">
+        <div class="kpi-content">
+            <span class="kpi-label">Riesgo Alto o Crítico (Prob ≥ 50%)</span>
+            <span class="kpi-value" style="color: {% if high_risk_count > 0 %}#f59e0b{% else %}var(--text-primary){% endif %};">
+                {{ high_risk_count }}
+            </span>
+            <span class="kpi-detail">Requieren alerta preventiva inmediata</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-warning">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-forecast-horizon">
+        <div class="kpi-content">
+            <span class="kpi-label">Horizonte de Anticipación</span>
+            <span class="kpi-value" style="color: var(--accent-teal);">24 hrs</span>
+            <span class="kpi-detail">Fecha Objetivo: {{ forecasts[0].fecha_objetivo if forecasts else 'Mañana' }}</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-teal">
+            <i class="fa-solid fa-clock"></i>
+        </div>
+    </div>
+</div>
+
+<!-- TABLA DETALLADA DE PRONÓSTICOS POR HOSPITAL -->
+<div class="glass-card" style="margin-bottom: 32px;" id="forecast-table-card">
+    <div class="card-header-clean">
+        <div>
+            <h3 class="card-title">
+                <i class="fa-solid fa-table-list"></i>
+                Pronósticos de Saturación por Hospital (24 Horas)
+            </h3>
+            <p class="card-subtitle">
+                Probabilidades calculadas, clase binaria estimada y recomendaciones de gestión hospitalaria
+            </p>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="glass-table" id="table-forecasts">
+            <thead>
+                <tr>
+                    <th>Establecimiento UCI</th>
+                    <th>Ocupación Actual (t-1)</th>
+                    <th>Tendencia</th>
+                    <th>Proyección (t)</th>
+                    <th style="min-width: 180px;">Probabilidad de Saturación</th>
+                    <th>Clase Predicha</th>
+                    <th>Nivel de Riesgo</th>
+                    <th>Recomendación Clínica</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in forecasts %}
+                    <tr>
+                        <td>
+                            <strong style="color: var(--text-primary); font-size: 0.9rem;">
+                                {{ f.hospital_nombre }}
+                            </strong>
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">
+                                Capacidad: {{ f.camas_totales }} camas ({{ f.camas_ocupadas_actual }} ocupadas)
+                            </div>
+                        </td>
+
+                        <td>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 700; color: {% if f.ocupacion_actual >= 85.0 %}#ff4757{% elif f.ocupacion_actual >= 75.0 %}#f59e0b{% else %}#10b981{% endif %};">
+                                {{ f.ocupacion_actual }}%
+                            </span>
+                        </td>
+
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem;">
+                                {% if f.tendencia == 'ascendente' %}
+                                    <i class="fa-solid fa-arrow-trend-up text-danger" style="color: #ff4757;"></i>
+                                    <span style="color: #ff4757; font-weight: 600;">+ Subiendo</span>
+                                {% elif f.tendencia == 'descendente' %}
+                                    <i class="fa-solid fa-arrow-trend-down text-success" style="color: #10b981;"></i>
+                                    <span style="color: #10b981; font-weight: 600;">- Bajando</span>
+                                {% else %}
+                                    <i class="fa-solid fa-minus text-muted" style="color: var(--text-muted);"></i>
+                                    <span style="color: var(--text-secondary);">Estable</span>
+                                {% endif %}
+                                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-muted);">
+                                    ({{ f.variacion_esperada }})
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <strong style="font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--text-primary);">
+                                {{ f.porcentaje_predicho }}%
+                            </strong>
+                        </td>
+
+                        <td>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: {% if f.probabilidad_saturacion >= 0.75 %}#ff4757{% elif f.probabilidad_saturacion >= 0.50 %}#f59e0b{% else %}var(--accent-teal){% endif %};">
+                                    {{ f.probabilidad_porcentaje }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar-container" style="height: 8px;">
+                                <div class="progress-bar-fill {% if f.probabilidad_saturacion >= 0.75 %}danger{% elif f.probabilidad_saturacion >= 0.50 %}warning{% else %}success{% endif %}"
+                                     style="width: {{ f.probabilidad_porcentaje }}%;">
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if f.prediccion_clase == 1 %}
+                                <span class="badge badge-danger animated-pulse">SATURADO</span>
+                            {% else %}
+                                <span class="badge badge-success">NO SATURADO</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if f.nivel_riesgo == 'Crítico' %}
+                                <span class="badge badge-danger">Crítico</span>
+                            {% elif f.nivel_riesgo == 'Alto' %}
+                                <span class="badge badge-warning">Alto</span>
+                            {% elif f.nivel_riesgo == 'Moderado' %}
+                                <span class="badge badge-teal">Moderado</span>
+                            {% else %}
+                                <span class="badge badge-success">Bajo</span>
+                            {% endif %}
+                        </td>
+
+                        <td style="font-size: 0.78rem; color: var(--text-secondary); max-width: 280px; line-height: 1.4;">
+                            {{ f.recomendacion }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- TARJETA EXPLICATIVA: VARIABLES PREDICTORAS Y CIENCIA DE DATOS -->
+<div class="glass-card" id="card-feature-engineering">
+    <h3 class="card-title" style="margin-bottom: 14px;">
+        <i class="fa-solid fa-diagram-project" style="color: var(--accent-teal);"></i>
+        Estructura de Variables Predictoras (16 Features)
+    </h3>
+    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.6;">
+        El modelo Random Forest procesa un vector de 16 predictores estructurados según literatura médica (Asplin et al., 2003; Morley et al., 2018; Nature Scientific Reports, 2025):
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); padding: 14px; border-radius: var(--radius-md);">
+            <div style="font-weight: 700; color: var(--accent-teal); font-size: 0.82rem; margin-bottom: 4px;">
+                1. Rezagos de Ocupación Histórica
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                <code>ocupacion_lag1</code> (t-1), <code>ocupacion_lag2</code> (t-2), <code>ocupacion_lag3</code> (t-3), <code>ocupacion_lag7</code> (semana anterior), y <code>media_movil_7d</code>.
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); padding: 14px; border-radius: var(--radius-md);">
+            <div style="font-weight: 700; color: #a855f7; font-size: 0.82rem; margin-bottom: 4px;">
+                2. Dinámica y Velocidad de Flujo
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                <code>velocidad_3d</code> (pendiente de cambio), <code>camas_ocupadas_lag1</code>, y <code>ratio_capacidad</code> (ocupadas vs. total instalado).
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); padding: 14px; border-radius: var(--radius-md);">
+            <div style="font-weight: 700; color: #f59e0b; font-size: 0.82rem; margin-bottom: 4px;">
+                3. Clima Altiplánico (SENAMHI / NASA POWER)
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                <code>temp_min_lag1</code> (heladas altiplánicas) y <code>rango_termico_lag1</code> (amplitud térmica diaria que gatilla crisis respiratorias).
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); padding: 14px; border-radius: var(--radius-md);">
+            <div style="font-weight: 700; color: #10b981; font-size: 0.82rem; margin-bottom: 4px;">
+                4. Calendario y Establecimiento
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">
+                <code>dia_semana</code>, <code>es_fin_semana</code>, <code>mes</code>, <code>codigo_hospital</code> y <code>tipo_institucion</code> (Regional vs Privado).
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

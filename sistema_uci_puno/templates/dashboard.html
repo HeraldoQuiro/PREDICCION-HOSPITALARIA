@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}Tablero de Control{% endblock %}
+{% block page_title %}Tablero de Monitoreo de Camas UCI — Puno 2026{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- BANNER DE ESTADO REGIONAL -->
+<div class="glass-card" style="margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid {{ kpis.estado_regional_color }};" id="regional-status-banner">
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; background: {{ kpis.estado_regional_color }}22; border: 1px solid {{ kpis.estado_regional_color }}55; display: flex; align-items: center; justify-content: center; color: {{ kpis.estado_regional_color }}; font-size: 1.2rem;">
+            <i class="fa-solid fa-hospital"></i>
+        </div>
+        <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                Estado de la Red UCI Regional (Puno)
+            </div>
+            <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 10px;">
+                <span>Nivel Operativo:</span>
+                <span class="badge {{ kpis.estado_regional_badge }} {% if kpis.saturados_hoy > 0 %}animated-pulse{% endif %}">
+                    {{ kpis.estado_regional }}
+                </span>
+                <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-secondary);">
+                    — Último corte oficial: <strong>{{ kpis.ultima_fecha }}</strong>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <a href="{{ url_for('pronosticos') }}" class="btn btn-secondary btn-sm" id="btn-quick-pronosticos">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Ver Pronósticos 24h</span>
+        </a>
+        <a href="{{ url_for('registro') }}" class="btn btn-primary btn-sm" id="btn-quick-registro">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo Registro</span>
+        </a>
+    </div>
+</div>
+
+<!-- GRID DE KPIS GLOBALES -->
+<div class="kpi-grid" id="kpi-summary-grid">
+    <!-- KPI 1: Total Hospitales -->
+    <div class="kpi-card" id="kpi-card-total-hospitals">
+        <div class="kpi-content">
+            <span class="kpi-label">Hospitales Monitoreados</span>
+            <span class="kpi-value" id="kpi-val-total-hospitals">{{ kpis.total_hospitales }}</span>
+            <span class="kpi-detail">5 UCIs activas en REUNIS</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-teal">
+            <i class="fa-solid fa-hospital-user"></i>
+        </div>
+    </div>
+
+    <!-- KPI 2: Hospitales Saturados Hoy (≥85%) -->
+    <div class="kpi-card highlight-danger" id="kpi-card-saturated-today">
+        <div class="kpi-content">
+            <span class="kpi-label">Saturados Hoy (≥ 85%)</span>
+            <span class="kpi-value" style="color: {% if kpis.saturados_hoy > 0 %}#ff4757{% else %}var(--text-primary){% endif %};" id="kpi-val-saturated-today">
+                {{ kpis.saturados_hoy }}
+            </span>
+            <span class="kpi-detail">
+                {% if kpis.saturados_hoy > 0 %}
+                    <strong style="color: #ff4757;">Atención: UCI en colapso crítico</strong>
+                {% else %}
+                    Sin saturación reportada hoy
+                {% endif %}
+            </span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <!-- KPI 3: En Alerta Preventiva (75-84%) -->
+    <div class="kpi-card" id="kpi-card-warning-today">
+        <div class="kpi-content">
+            <span class="kpi-label">En Alerta (75% - 84%)</span>
+            <span class="kpi-value" style="color: {% if kpis.alerta_hoy > 0 %}#f59e0b{% else %}var(--text-primary){% endif %};" id="kpi-val-warning-today">
+                {{ kpis.alerta_hoy }}
+            </span>
+            <span class="kpi-detail">Cerca al umbral crítico</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <!-- KPI 4: Ocupación Promedio Regional -->
+    <div class="kpi-card" id="kpi-card-avg-occupancy">
+        <div class="kpi-content">
+            <span class="kpi-label">Ocupación Regional</span>
+            <span class="kpi-value" id="kpi-val-avg-occupancy">{{ kpis.ocupacion_promedio }}%</span>
+            <span class="kpi-detail">
+                <strong>{{ kpis.total_ocupadas_regional }}</strong> ocupadas de <strong>{{ kpis.total_camas_regional }}</strong> camas totales
+            </span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-teal">
+            <i class="fa-solid fa-bed-pulse"></i>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN: 5 TARJETAS DE HOSPITALES CON ESTADO Y PREDICCIÓN 24H -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+    <div>
+        <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-hospital-wide" style="color: var(--accent-teal);"></i>
+            Estado Actual por Establecimiento UCI
+        </h2>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">
+            Ocupación actual y pronóstico anticipatorio a 24 horas (Modelo Random Forest).
+        </p>
+    </div>
+    <span class="badge badge-muted">Umbral de Saturación: 85%</span>
+</div>
+
+<div class="hospitals-grid" id="hospitals-status-grid">
+    {% for hosp in hospitals %}
+        <div class="hospital-card {% if hosp.porcentaje_ocupacion >= 85.0 %}saturated{% endif %}" id="hospital-card-{{ hosp.codigo }}">
+            <!-- Header de Tarjeta -->
+            <div class="hospital-card-header">
+                <div>
+                    <h3 class="hospital-name">{{ hosp.nombre }}</h3>
+                    <div class="hospital-meta">
+                        <i class="fa-solid fa-location-dot" style="color: var(--accent-teal);"></i>
+                        <span>{{ hosp.ciudad }}</span>
+                        <span>·</span>
+                        <span>{{ hosp.institucion }}</span>
+                        <span>·</span>
+                        <span>Cod: {{ hosp.codigo }}</span>
+                    </div>
+                </div>
+                <div class="hospital-badge-group">
+                    <span class="badge {{ hosp.badge_class }} {% if hosp.porcentaje_ocupacion >= 85.0 %}animated-pulse{% endif %}">
+                        {{ hosp.status_text }}
+                    </span>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">
+                        {{ hosp.nivel }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Números de Ocupación -->
+            <div class="occupancy-display">
+                <div class="occupancy-numbers">
+                    <div class="occupancy-pct" style="color: {% if hosp.porcentaje_ocupacion >= 85.0 %}#ff4757{% elif hosp.porcentaje_ocupacion >= 75.0 %}#f59e0b{% else %}#10b981{% endif %};">
+                        {{ hosp.porcentaje_ocupacion }}%
+                    </div>
+                    <div class="occupancy-beds-count">
+                        <strong>{{ hosp.camas_ocupadas_uci }}</strong> de <strong>{{ hosp.camas_uci_tot }}</strong> camas
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-align: right;">
+                            ({{ hosp.camas_uci_disp }} libres)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barra de Progreso con Marca de 85% -->
+                <div class="progress-bar-container">
+                    <div class="threshold-mark" title="Umbral de Saturación (85%)"></div>
+                    <div class="progress-bar-fill {% if hosp.porcentaje_ocupacion >= 85.0 %}danger{% elif hosp.porcentaje_ocupacion >= 75.0 %}warning{% else %}success{% endif %}"
+                         style="width: {{ hosp.porcentaje_ocupacion }}%;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pronóstico a 24 Horas -->
+            <div class="hospital-card-forecast">
+                <div class="forecast-preview-label">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-teal);"></i>
+                    <span>Riesgo Mañana (24h):</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="badge {% if hosp.forecast_risk == 'Crítico' %}badge-danger{% elif hosp.forecast_risk == 'Alto' %}badge-warning{% else %}badge-teal{% endif %}">
+                        {{ hosp.forecast_risk }} ({{ hosp.forecast_prob }}%)
+                    </span>
+                    <i class="fa-solid {% if hosp.forecast_trend == 'ascendente' %}fa-arrow-trend-up text-danger{% elif hosp.forecast_trend == 'descendente' %}fa-arrow-trend-down text-success{% else %}fa-minus text-muted{% endif %}"
+                       title="Tendencia {{ hosp.forecast_trend }}"></i>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- SECCIÓN: GRÁFICAS DE TENDENCIA (CHART.JS) -->
+<div class="charts-row">
+    <!-- Gráfica 1: Tendencia 30 Días -->
+    <div class="glass-card chart-card" id="trend-chart-card">
+        <div class="card-header-clean">
+            <div>
+                <h3 class="card-title">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Tendencia de Ocupación Histórica (%)
+                </h3>
+                <p class="card-subtitle">Evolución de los 5 hospitales con línea de umbral crítico al 85%</p>
+            </div>
+            <div class="chart-actions">
+                <button type="button" class="btn-chart-filter" data-days="7">7d</button>
+                <button type="button" class="btn-chart-filter" data-days="14">14d</button>
+                <button type="button" class="btn-chart-filter active" data-days="30">30d</button>
+            </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+            <canvas id="occupancyTrendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Gráfica 2: Distribución de Capacidad de Camas -->
+    <div class="glass-card chart-card" id="beds-chart-card">
+        <div class="card-header-clean">
+            <div>
+                <h3 class="card-title">
+                    <i class="fa-solid fa-layer-group"></i>
+                    Capacidad Actual
+                </h3>
+                <p class="card-subtitle">Camas ocupadas vs. disponibles por unidad</p>
+            </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+            <canvas id="bedDistributionChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN: ACTIVIDAD RECIENTE (ÚLTIMOS REPORTES REGISTRADOS) -->
+<div class="glass-card" id="recent-logs-card">
+    <div class="card-header-clean">
+        <div>
+            <h3 class="card-title">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Últimos Registros Diarios Ingresados
+            </h3>
+            <p class="card-subtitle">Historial de reportes diarios sincronizados con MINSA REUNIS</p>
+        </div>
+        <a href="{{ url_for('registro') }}" class="btn btn-secondary btn-sm">
+            <span>Ver Todos los Registros</span>
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="glass-table" id="table-recent-logs">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hospital</th>
+                    <th>Institución</th>
+                    <th>Camas Tot.</th>
+                    <th>Ocupadas</th>
+                    <th>Disponibles</th>
+                    <th>% Ocupación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                    <tr>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-weight: 500;">
+                            {{ log.fecha }}
+                        </td>
+                        <td>
+                            <strong style="color: var(--text-primary);">{{ log.hospital_nombre }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge badge-muted">{{ log.institucion }}</span>
+                        </td>
+                        <td>{{ log.camas_uci_tot }}</td>
+                        <td>{{ log.camas_ocupadas_uci }}</td>
+                        <td>{{ log.camas_uci_disp }}</td>
+                        <td>
+                            <strong style="font-family: 'JetBrains Mono', monospace; color: {% if log.porcentaje_ocupacion >= 85.0 %}#ff4757{% elif log.porcentaje_ocupacion >= 75.0 %}#f59e0b{% else %}#10b981{% endif %};">
+                                {{ log.porcentaje_ocupacion }}%
+                            </strong>
+                        </td>
+                        <td>
+                            {% if log.estado_saturacion == 1 %}
+                                <span class="badge badge-danger animated-pulse">Saturado</span>
+                            {% elif log.porcentaje_ocupacion >= 75.0 %}
+                                <span class="badge badge-warning">En Alerta</span>
+                            {% else %}
+                                <span class="badge badge-success">Normal</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                            No hay registros diarios cargados en la base de datos.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Alertas de Saturación UCI{% endblock %}
+{% block page_title %}Sistema de Alertas Tempranas de Saturación{% endblock %}
+{% block breadcrumb %}Alertas UCI{% endblock %}
+
+{% block content %}
+<!-- CONTADORES DE ALERTAS -->
+<div class="kpi-grid" style="margin-bottom: 28px;" id="alerts-kpi-grid">
+    <div class="kpi-card highlight-danger" id="kpi-alerts-criticas">
+        <div class="kpi-content">
+            <span class="kpi-label">Alertas Críticas (≥85%)</span>
+            <span class="kpi-value" style="color: #ff4757;">{{ counts.criticas }}</span>
+            <span class="kpi-detail">UCIs en estado de saturación</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-alerts-advertencias">
+        <div class="kpi-content">
+            <span class="kpi-label">Advertencias (75% - 84%)</span>
+            <span class="kpi-value" style="color: #f59e0b;">{{ counts.advertencias }}</span>
+            <span class="kpi-detail">Próximas al límite crítico</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-warning">
+            <i class="fa-solid fa-bell"></i>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-alerts-preventivas">
+        <div class="kpi-content">
+            <span class="kpi-label">Preventivas 24h (ML ≥ 60%)</span>
+            <span class="kpi-value" style="color: var(--accent-teal);">{{ counts.preventivas }}</span>
+            <span class="kpi-detail">Riesgo inminente anticipado</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-teal">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-alerts-total">
+        <div class="kpi-content">
+            <span class="kpi-label">Total Alertas Activas</span>
+            <span class="kpi-value">{{ counts.total_activas }}</span>
+            <span class="kpi-detail">Pendientes de atención</span>
+        </div>
+        <div class="kpi-icon-box kpi-icon-success">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+    </div>
+</div>
+
+<!-- FILTROS Y ACCIONES DE ALERTAS -->
+<div class="glass-card" style="margin-bottom: 28px; padding: 18px 24px;" id="alerts-filters-card">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;" id="alerts-filter-tabs">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-right: 6px;">Filtrar:</span>
+            <a href="{{ url_for('alertas', filtro='ALL') }}" 
+               class="btn-chart-filter {% if filtro_actual == 'ALL' %}active{% endif %}">
+                Todas ({{ counts.total_registradas }})
+            </a>
+            <a href="{{ url_for('alertas', filtro='CRITICA') }}" 
+               class="btn-chart-filter {% if filtro_actual == 'CRITICA' %}active{% endif %}">
+                Críticas ({{ counts.criticas }})
+            </a>
+            <a href="{{ url_for('alertas', filtro='ADVERTENCIA') }}" 
+               class="btn-chart-filter {% if filtro_actual == 'ADVERTENCIA' %}active{% endif %}">
+                Advertencias ({{ counts.advertencias }})
+            </a>
+            <a href="{{ url_for('alertas', filtro='PREVENTIVA_24H') }}" 
+               class="btn-chart-filter {% if filtro_actual == 'PREVENTIVA_24H' %}active{% endif %}">
+                Preventivas 24h ({{ counts.preventivas }})
+            </a>
+        </div>
+
+        {% if counts.total_activas > 0 %}
+            <form action="{{ url_for('marcar_todas_alertas') }}" method="POST" id="form-mark-all-read">
+                <button type="submit" class="btn btn-secondary btn-sm" id="btn-mark-all-read">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Marcar todas como atendidas</span>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- LISTA DE ALERTAS ACTIVAS -->
+<div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px;" id="alerts-list-container">
+    {% for alert in alerts %}
+        <div class="glass-card {% if alert.nivel == 'ROJA' and not alert.leida %}highlight-danger{% endif %}" 
+             style="padding: 20px 24px; {% if alert.leida %}opacity: 0.65;{% endif %}" 
+             id="alert-item-{{ alert.id }}">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                    <!-- Icono según Severidad -->
+                    <div style="width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;
+                        {% if alert.nivel == 'ROJA' %}
+                            background: var(--danger-bg); color: var(--danger-red); border: 1px solid rgba(255, 71, 87, 0.4);
+                        {% elif alert.nivel == 'AMARILLA' %}
+                            background: var(--warning-bg); color: var(--warning-amber); border: 1px solid rgba(245, 158, 11, 0.4);
+                        {% else %}
+                            background: rgba(0, 212, 255, 0.12); color: var(--accent-teal); border: 1px solid rgba(0, 212, 255, 0.4);
+                        {% endif %}">
+                        {% if alert.nivel == 'ROJA' %}
+                            <i class="fa-solid fa-skull-crossbones"></i>
+                        {% elif alert.nivel == 'AMARILLA' %}
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% else %}
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                            <span class="badge {% if alert.nivel == 'ROJA' %}badge-danger animated-pulse{% elif alert.nivel == 'AMARILLA' %}badge-warning{% else %}badge-teal{% endif %}">
+                                {{ alert.tipo_alerta }}
+                            </span>
+                            <strong style="color: var(--text-primary); font-size: 1rem;">
+                                {{ alert.hospital_nombre }}
+                            </strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">
+                                · {{ alert.ciudad }} ({{ alert.institucion }})
+                            </span>
+                        </div>
+
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px;">
+                            {{ alert.mensaje }}
+                        </p>
+
+                        <div style="display: flex; align-items: center; gap: 16px; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>
+                                <i class="fa-solid fa-calendar-day" style="color: var(--accent-teal); margin-right: 4px;"></i>
+                                Fecha: <strong style="color: var(--text-primary);">{{ alert.fecha }}</strong>
+                            </span>
+                            <span>
+                                <i class="fa-solid fa-bed" style="margin-right: 4px;"></i>
+                                Ocupación: <strong style="color: var(--text-primary);">{{ alert.porcentaje_ocupacion }}%</strong>
+                                {% if alert.camas_ocupadas %}
+                                    ({{ alert.camas_ocupadas }}/{{ alert.camas_totales }} camas)
+                                {% endif %}
+                            </span>
+                            <span>
+                                <i class="fa-solid fa-phone" style="margin-right: 4px;"></i>
+                                Central: {{ alert.telefono or '(051) 364000' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botón de Acción -->
+                <div>
+                    {% if not alert.leida %}
+                        <form action="{{ url_for('marcar_alerta', alert_id=alert.id) }}" method="POST">
+                            <button type="submit" class="btn btn-secondary btn-sm" title="Marcar como atendida y registrar protocolo">
+                                <i class="fa-solid fa-check"></i>
+                                <span>Marcar Atendida</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <span class="badge badge-muted">
+                            <i class="fa-solid fa-check-circle"></i> Atendida
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="glass-card" style="text-align: center; padding: 48px 24px;">
+            <i class="fa-solid fa-shield-heart" style="font-size: 3rem; color: #10b981; margin-bottom: 16px;"></i>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 6px;">
+                Sin alertas activas registradas
+            </h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 480px; margin: 0 auto;">
+                Todas las UCIs de la región Puno se encuentran dentro de los márgenes operativos normales.
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- DIRECTORIO DE COORDINACIÓN DE EMERGENCIAS Y CONTACTOS CLÍNICOS -->
+<div class="glass-card" id="card-emergency-contacts">
+    <div class="card-header-clean">
+        <div>
+            <h3 class="card-title">
+                <i class="fa-solid fa-phone-volume" style="color: var(--accent-teal);"></i>
+                Directorio Regional de Coordinación y Derivaciones (CRUE / SAMU Puno)
+            </h3>
+            <p class="card-subtitle">
+                Contactos oficiales para activación de contingencia macro-regional de camas UCI
+            </p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); border-radius: var(--radius-md); padding: 14px;">
+            <div style="font-weight: 700; color: #ff6b81; font-size: 0.88rem; margin-bottom: 4px;">
+                <i class="fa-solid fa-truck-medical"></i> SAMU Puno (Emergencias)
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Central Telefónica Nacional: <strong>106</strong></div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Línea Regional: (051) 363636</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); border-radius: var(--radius-md); padding: 14px;">
+            <div style="font-weight: 700; color: var(--accent-teal); font-size: 0.88rem; margin-bottom: 4px;">
+                <i class="fa-solid fa-tower-broadcast"></i> CRUE Puno (Regulador de Camas)
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Coordinación de Traslados: (051) 364120</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">DIRESA Puno: (051) 351234</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); border-radius: var(--radius-md); padding: 14px;">
+            <div style="font-weight: 700; color: #fbbf24; font-size: 0.88rem; margin-bottom: 4px;">
+                <i class="fa-solid fa-hospital"></i> Hospitales Referenciales
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">H. Carlos Monje Medrano (Juliaca): (051) 321131</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">HR Manuel Núñez Butrón (Puno): (051) 364000</div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-glass-subtle); border-radius: var(--radius-md); padding: 14px;">
+            <div style="font-weight: 700; color: #a855f7; font-size: 0.88rem; margin-bottom: 4px;">
+                <i class="fa-solid fa-clock"></i> Red Macro-Regional Sur
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Enlace Arequipa (Honorio Delgado): (054) 231818</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Enlace Cusco (Antonio Lorena): (084) 226511</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

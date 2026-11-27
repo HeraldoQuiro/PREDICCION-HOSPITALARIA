@@ -1,0 +1,10 @@
+﻿modelo,precision,sensibilidad,f1,roc_auc,pr_auc
+Persistencia (estado de ayer),0.6,0.615,0.608,0.776,0.42
+Ingenuo semanal (hace 7 días),0.319,0.385,0.349,0.63,0.204
+Perfil de calendario (mes × día),0.0,0.0,0.0,0.571,0.158
+Regresión logística,0.5,0.692,0.581,0.899,0.559
+Random Forest,0.615,0.615,0.615,0.899,0.525
+XGBoost,0.561,0.59,0.575,0.896,0.554
+CatBoost,0.561,0.59,0.575,0.898,0.538
+LSTM,0.319,0.564,0.407,0.796,0.309
+GRU,0.423,0.769,0.545,0.884,0.531

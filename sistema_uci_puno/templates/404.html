@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Página no encontrada (404){% endblock %}
+{% block page_title %}Error 404 — Página no encontrada{% endblock %}
+{% block breadcrumb %}404{% endblock %}
+
+{% block content %}
+<div class="glass-card" style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 40px auto;" id="error-404-card">
+    <div style="font-size: 4rem; font-weight: 800; color: var(--accent-teal); font-family: 'JetBrains Mono', monospace; line-height: 1; margin-bottom: 16px;">
+        404
+    </div>
+    <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">
+        Página no encontrada
+    </h2>
+    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
+        La ruta solicitada no existe en el sistema de monitoreo SatUCI-Puno o ha sido reubicada.
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" id="btn-return-dashboard-404">
+        <i class="fa-solid fa-house"></i>
+        <span>Volver al Tablero Principal</span>
+    </a>
+</div>
+{% endblock %}
